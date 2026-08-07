@@ -5,6 +5,10 @@ from fastapi import APIRouter, Request,status
 from fastapi.responses import JSONResponse
 # pyrefly: ignore [missing-import]
 from sqlalchemy import text
+# pyrefly: ignore [missing-import]
+import structlog
+
+logger = structlog.get_logger()
 
 router = APIRouter(tags=["Health"])
 @router.get("/health")
@@ -20,14 +24,16 @@ async def health_check(request: Request):
         await request.app.state.redis.ping()
         redis_status = "connected"
 
-    except Exception:
+    except Exception as e:
+        logger.exception("Redis down",error=str(e))
         is_healthy = False
     
     try:
         async with request.app.state.db_engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         db_status = "connected"
-    except Exception:
+    except Exception as e:
+        logger.exception("Db down",error=str(e))
         is_healthy = False
     
     up_time = time.time() - request.app.state.startup_time
