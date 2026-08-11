@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from app.core.lifespan import lifespan
 from app.routers import health
+from app.routers import chat
 # pyrefly: ignore [missing-import]
 from app.core.logging_config import setup_logging
 
@@ -22,3 +23,4 @@ async def root():
     return {'status':'ok'}
 
 app.include_router(health.router)
+app.include_router(chat.router)
