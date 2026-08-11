@@ -6,7 +6,11 @@ from fastapi import FastAPI
 import redis.asyncio as redis
 # pyrefly: ignore [missing-import]
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+# pyrefly: ignore [missing-import]
 from app.config import settings
+# pyrefly: ignore [missing-import]
+import httpx
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +38,10 @@ async def lifespan(app: FastAPI):
         autoflush=False
     )
     
+    app.state.http_client = httpx.AsyncClient(
+        timeout=httpx.Timeout(timeout=30.0)
+    )
+
     print("All connections opened successfully.")
     try:
         yield
@@ -42,4 +50,5 @@ async def lifespan(app: FastAPI):
 
         await app.state.redis.aclose()
         await app.state.db_engine.dispose()
+        await app.state.http_client.aclose()
         print("Successful shutdown")
