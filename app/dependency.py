@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # pyrefly: ignore [missing-import]
 import redis.asyncio as redis
 
-async def get_redis(request: Request) -> redis.Redis:
+async def get_redis_session(request: Request) -> redis.Redis:
 
     # Retrieving the Redis connection pool from app state
     return request.app.state.redis
