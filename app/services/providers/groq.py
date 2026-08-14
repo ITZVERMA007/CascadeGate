@@ -27,8 +27,7 @@ class GroqProvider(LLMProvider):
             "model": self.model,
             "messages": messages,
             "temperature": kwargs.get("temperature",0.7),
-            "max_tokens": kwargs.get("max_tokens",1024),
-            "logprobs": True,
+            "max_tokens": kwargs.get("max_tokens",1024)
         }
 
         try:

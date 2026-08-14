@@ -6,7 +6,7 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     session_id: str = Field(..., description="Unique identifier for the user session")
-    message: list[Message] = Field(..., description="The conversation history")
+    messages: list[Message] = Field(..., description="The conversation history")
     model: str = Field(..., description="The requested model")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     

@@ -1,4 +1,3 @@
-from alembic import env
 import time 
 import asyncio
 # pyrefly: ignore [missing-import]
@@ -12,9 +11,9 @@ from app.config import settings
 from app.models.schemas import ChatRequest
 from app.services.providers.groq import GroqProvider
 # pyrefly: ignore [missing-import]
-from app.service.request_logger import log_request
+from app.services.request_logger import log_request
 # pyrefly: ignore [missing-import]
-from app.dependecy import get_db_session
+from app.dependency import get_db_session
 
 router = APIRouter(prefix="/v1")
 logger = structlog.get_logger()
@@ -33,8 +32,7 @@ def verify_api_key(api_key: str = Security(api_key_header)):
 async def chat_completions(
     body: ChatRequest,
     request: Request,
-    api_key: str = Depends(verify_api_key),
-    db_session = Depends(get_db_session)
+    api_key: str = Depends(verify_api_key)
 ):
     start_time = time.perf_counter()
 
@@ -54,14 +52,14 @@ async def chat_completions(
         temperature=body.temperature
         )
 
-        latency_ms = int((time.perf_counter - start_time) * 1000)
+        latency_ms = int((time.perf_counter() - start_time) * 1000)
 
         usage = response_data.get("usage",{})
         prompt_tokens = usage.get("prompt_tokens",0)
         completion_tokens = usage.get("completion_tokens",0)
 
         asyncio.create_task(log_request(
-            session=db_session,
+            session_factory=request.app.state.db_session_factory,
             session_id=body.session_id,
             model_requested=body.model,
             initial_model=body.model,
@@ -80,8 +78,8 @@ async def chat_completions(
         
         # Logging the failure
         latency_ms = int((time.perf_counter() - start_time) * 1000)
-        asyncio.create_tasK(log_request(
-            session=db_session,
+        asyncio.create_task(log_request(
+            session_factory=request.app.state.db_session_factory,
             session_id=body.session_id,
             model_requested=body.model,
             initial_model=body.model,
